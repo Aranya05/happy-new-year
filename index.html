@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #1a1a1a;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    #countdown {
+      font-size: 3em;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #fireworks {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+    }
+
+    @keyframes fireworks {
+      from {
+        transform: translateY(0) rotate(0deg);
+      }
+      to {
+        transform: translateY(-100vh) rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="countdown"></div>
+  <canvas id="fireworks"></canvas>
+
+  <script>
+    // Set the date we're counting down to
+    const countDownDate = new Date("Jan 1, 2024 00:00:00").getTime();
+
+    // Update the countdown every 1 second
+    const countdown = document.getElementById("countdown");
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const distance = countDownDate - now;
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      countdown.innerHTML = `<span style="color: #FFD700;">${days}</span>d 
+                             <span style="color: #FF4500;">${hours}</span>h 
+                             <span style="color: #32CD32;">${minutes}</span>m 
+                             <span style="color: #4682B4;">${seconds}</span>s`;
+
+      if (distance < 0) {
+        clearInterval(countdownInterval);
+        countdown.innerHTML = "<span style='color: #FFD700;'>Happy New Year!</span>";
+        startFireworks();
+      }
+    };
+
+    const countdownInterval = setInterval(updateCountdown, 1000);
+
+    // Fireworks animation
+    const fireworks = document.getElementById("fireworks");
+    const ctx = fireworks.getContext("2d");
+
+    const startFireworks = () => {
+      fireworks.style.opacity = 1;
+      fireworks.width = window.innerWidth;
+      fireworks.height = window.innerHeight;
+
+      const particles = [];
+
+      const createParticle = () => {
+        const particle = {
+          x: Math.random() * fireworks.width,
+          y: Math.random() * fireworks.height,
+          size: Math.random() * 3 + 1,
+          color: getRandomColor(),
+          speedX: Math.random() * 3 - 1.5,
+          speedY: Math.random() * 3 - 1.5,
+        };
+        particles.push(particle);
+      };
+
+      const drawParticles = () => {
+        ctx.clearRect(0, 0, fireworks.width, fireworks.height);
+        ctx.globalCompositeOperation = "lighter";
+
+        for (const particle of particles) {
+          ctx.fillStyle = particle.color;
+          ctx.beginPath();
+          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      };
+
+      const updateParticles = () => {
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].x += particles[i].speedX;
+          particles[i].y += particles[i].speedY;
+          particles[i].size -= 0.02;
+
+          if (particles[i].size <= 0.2) {
+            particles.splice(i, 1);
+            i--;
+          }
+        }
+      };
+
+      const loop = () => {
+        createParticle();
+        drawParticles();
+        updateParticles();
+
+        if (fireworks.style.opacity > 0) {
+          requestAnimationFrame(loop);
+        } else {
+          fireworks.style.opacity = 0;
+        }
+      };
+
+      loop();
+    };
+
+    const getRandomColor = () => {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    };
+  </script>
+</body>
+</html>
